@@ -1,7 +1,5 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Security;
 using TMPro;
 using UnityEngine;
 
@@ -11,18 +9,22 @@ namespace Connect.Generator.OptimisedNeighbours
     {
         [SerializeField] private TMP_Text _timerText, _gridCountText;
         [SerializeField] private bool _showOnlyResult;
-        private List<GridData> checkingGrid;
+        private GridList checkingGrid;
         private LevelGenerator Instance;
         private bool isCreating;
 
+        private HashSet<GridList> GridSet;
+
         [SerializeField] private float speedMultipler;
         [SerializeField] private float speed;
+        private long checkingGridCount;
 
         private void Start()
         {
-            checkingGrid = new List<GridData>();
             Instance = GetComponent<LevelGenerator>();
             isCreating = true;
+            GridSet =  new HashSet<GridList>();
+            checkingGridCount = 0;
         }
 
         public void Generate()
@@ -32,43 +34,64 @@ namespace Connect.Generator.OptimisedNeighbours
 
         private IEnumerator GeneratePaths()
         {
+            GridData tempGrid = new GridData(0, 0, Instance.levelSize);
+            GridList tempList = new GridList(tempGrid);
+            checkingGrid = tempList;
+            AddToGridSet(tempList);
+
+
+            GridList addList = checkingGrid;
+
             for (int i = 0; i < Instance.levelSize; i++)
             {
                 for (int j = 0; j < Instance.levelSize; j++)
                 {
-                    GridData tempGrid = new GridData(i, j, Instance.levelSize);
-                    checkingGrid.Add(tempGrid);
+                    tempGrid = new GridData(i, j, Instance.levelSize);
+                    tempList = new GridList(tempGrid);
+
+                    if(!GridSet.Contains(tempList))
+                    {
+                        addList.Next = tempList;
+                        addList = addList.Next;
+                        AddToGridSet(tempList);
+                    }
                 }
             }
+            
             yield return new WaitForSeconds(speed);
 
             StartCoroutine(SolvePaths());
 
             int count = 0;
 
+            GridList showList = checkingGrid;
+
             while (isCreating)
             {
-                if (count == checkingGrid.Count)
-                {
-                    yield break;
-                }
 
-
-                while (_showOnlyResult && !checkingGrid[count].IsGridComplete())
+                while (_showOnlyResult && !showList.Data.IsGridComplete())
                 {
-                    count++;
-                    if (count == checkingGrid.Count)
+                    if (showList.Next == null)
                     {
                         yield break;
                     }
+                    showList = showList.Next;
                 }
 
 
-                Instance.RenderGrid(checkingGrid[count]._grid);
+                Instance.RenderGrid(showList.Data._grid);
                 count++;
 
                 _timerText.text = count.ToString();
-                _gridCountText.text = checkingGrid.Count.ToString();
+                _gridCountText.text = checkingGridCount.ToString();
+
+                showList = showList.Next;
+
+
+                if (showList == null)
+                {
+                    yield break;
+                }
 
                 yield return new WaitForSeconds(speed);
             }
@@ -80,72 +103,109 @@ namespace Connect.Generator.OptimisedNeighbours
         private IEnumerator SolvePaths()
         {
             bool canSolve = true;
-            int iterPerFrame = (int)(speedMultipler / speed);
+            int iterPerFrame = (int)(speedMultipler);
             int currentIter = 0;
+
+            GridList solveList = checkingGrid;
+            GridList resultGridList;
+            GridData item;
+
+            GridData tempGrid;
+            GridList tempList, connectList;
+            Vector2Int checkingDirection;
 
             while (canSolve)
             {
-                List<GridData> resultGridData = new List<GridData>();
+                resultGridList = solveList;
 
-                foreach (var item in checkingGrid)
-                {
-                    if (!item.IsSolved)
-                    {
-                        resultGridData.Add(item);
-                    }
-                }
-
-                if (resultGridData.Count == 0)
+                if(solveList == null)
                 {
                     canSolve = false;
                     yield break;
                 }
 
-                foreach (var item in resultGridData)
+                item = resultGridList.Data;
+
+                foreach (var direction in directionChecks)
                 {
-                    int posIndex = checkingGrid.IndexOf(item);
-                    int insertIndex = 1;
+                    checkingDirection = item.CurrentPos + direction;
 
-                    foreach (var direction in directionChecks)
+                    if (item.IsInsideGrid(checkingDirection)
+                        && item._grid[checkingDirection] == -1
+                        && item.IsNotNeighbour(checkingDirection)
+                        )
                     {
-                        Vector2Int checkingDirection = item.CurrentPos + direction;
+                        tempGrid = new GridData(checkingDirection.x,checkingDirection.y,item.ColorId,item);
+                        tempList = new GridList(tempGrid);
 
-                        if (item.IsInsideGrid(checkingDirection)
-                            && item._grid[checkingDirection] == -1
-                            && item.IsNotNeighbour(checkingDirection)
-                            )
+                        if(!GridSet.Contains(tempList))
                         {
-                            checkingGrid.Insert(posIndex + insertIndex,
-                                new GridData(checkingDirection.x, checkingDirection.y,
-                                item.ColorId, item)
-                                );
-                            insertIndex++;
+                            connectList = resultGridList.Next;
+                            resultGridList.Next = tempList;
+                            tempList.Next = connectList;
+                            resultGridList = resultGridList.Next;
+                            AddToGridSet(tempList);
                         }
-                    }
-
-                    foreach (var emptyPos in item.EmptyPosition())
-                    {
-                        if (item.FlowLength() > 2)
-                        {
-                            checkingGrid.Insert(posIndex + insertIndex,
-                                new GridData(emptyPos.x, emptyPos.y,
-                                item.ColorId + 1, item)
-                                );
-                            insertIndex++;
-                        }
-                    }
-
-                    item.IsSolved = true;
-
-                    currentIter++;
-
-                    if (currentIter > iterPerFrame)
-                    {
-                        currentIter = 0;
-                        yield return new WaitForSeconds(speed);
                     }
                 }
+
+                foreach (var emptyPos in item.EmptyPosition())
+                {
+                    if (item.FlowLength() > 2)
+                    {
+                        tempGrid = new GridData(emptyPos.x, emptyPos.y, item.ColorId + 1, item);
+                        tempList = new GridList(tempGrid);
+
+                        if (!GridSet.Contains(tempList))
+                        {
+                            connectList = resultGridList.Next;
+                            resultGridList.Next = tempList;
+                            tempList.Next = connectList;
+                            resultGridList = resultGridList.Next;
+                            AddToGridSet(tempList);
+                        }
+                    }
+                }
+
+                item.IsSolved = true;
+
+                currentIter++;
+
+                if (currentIter > iterPerFrame * Time.deltaTime)
+                {
+                    currentIter = 0;
+                    yield return null;
+                }
+
+                solveList = solveList.Next;
             }
+        }
+
+        private void AddToGridSet(GridList addList)
+        {
+            GridList tempList;
+            foreach (var item in addList.Data.GetSimilar())
+            {
+                tempList = new GridList(item);
+                if(!GridSet.Contains(tempList))
+                {
+                    GridSet.Add(tempList);
+                }
+            }
+
+            checkingGridCount++;
+        }
+    }
+
+    public class GridList
+    {
+        public GridList Next;
+        public GridData Data;
+
+        public GridList(GridData data)
+        {
+            Next = null;
+            Data = data;
         }
     }
 

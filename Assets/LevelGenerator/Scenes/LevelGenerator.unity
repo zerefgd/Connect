@@ -697,8 +697,8 @@ MonoBehaviour:
   _timerText: {fileID: 1562565956}
   _gridCountText: {fileID: 454374650}
   _showOnlyResult: 0
-  speedMultipler: 1000
-  speed: 0.02
+  speedMultipler: 10000
+  speed: 0.1
 --- !u!1 &1487896737
 GameObject:
   m_ObjectHideFlags: 0
