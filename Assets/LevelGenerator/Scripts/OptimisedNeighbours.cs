@@ -1,11 +1,13 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Security;
 using TMPro;
 using UnityEngine;
 
-namespace Connect.Generator.AllNeighbours
+namespace Connect.Generator.OptimisedNeighbours
 {
-    public class AllNeighbours : MonoBehaviour, GenerateMethod
+    public class OptimisedNeighbours : MonoBehaviour,GenerateMethod
     {
         [SerializeField] private TMP_Text _timerText, _gridCountText;
         [SerializeField] private bool _showOnlyResult;
@@ -156,6 +158,7 @@ namespace Connect.Generator.AllNeighbours
         public bool IsSolved;
         public Vector2Int CurrentPos;
         public int ColorId;
+        public static int LevelSize;
 
         public GridData(int i, int j, int levelSize)
         {
@@ -172,6 +175,7 @@ namespace Connect.Generator.AllNeighbours
             CurrentPos = new Vector2Int(i, j);
             ColorId = 0;
             _grid[CurrentPos] = ColorId;
+            LevelSize = levelSize;
         }
 
         public GridData(int i, int j, int passedColor, GridData gridCopy)
@@ -262,5 +266,91 @@ namespace Connect.Generator.AllNeighbours
 
             return result;
         }
-    } 
+
+        public List<GridData> GetSimilar()
+        {
+            List<GridData> result = new List<GridData>();
+
+            GridData addData;
+
+            for(int i = 0; i < 4; i++)
+            {
+                addData = new GridData(CurrentPos.x, CurrentPos.y, ColorId, this);
+                addData.Rotate(i);
+                result.Add(addData);
+                addData = new GridData(CurrentPos.x, CurrentPos.y, ColorId, this);
+                addData.Flip(i);
+                result.Add(addData);
+            }
+
+            return result;
+        }
+
+        public void Rotate(int rot)
+        {
+            for (int i = 0; i < rot; i++)
+            {
+                Rotate();
+            }
+        }
+
+        private void Rotate()
+        {
+            Dictionary<Vector2Int,int> result = new Dictionary<Vector2Int,int>();
+
+            for (int i = 0; i < LevelSize; i++)
+            {
+                for (int j = 0; j < LevelSize; j++)
+                {
+                    result[Rotate(new Vector2Int(i, j))] = _grid[new Vector2Int(i, j)];
+                }
+            }
+
+            for (int i = 0; i < LevelSize; i++)
+            {
+                for (int j = 0; j < LevelSize; j++)
+                {
+                    _grid[new Vector2Int(i, j)] = result[new Vector2Int(i, j)];
+                }
+            }
+
+            CurrentPos = Rotate(CurrentPos);
+
+        }
+
+        private Vector2Int Rotate(Vector2Int pos)
+        {
+            Vector2Int result = pos;
+            result.x = LevelSize - 1 - pos.y;
+            result.y = pos.x;
+            return result;
+        }
+
+
+        public void Flip(int flip)
+        {
+            Rotate(flip);
+
+            int tempColor;
+            Vector2Int firstPos, secondPos;
+
+            for (int i = 0; i < LevelSize/2; i++)
+            {
+                for (int j = 0; j < LevelSize; j++)
+                {
+                    firstPos = new Vector2Int(i, j);
+                    tempColor = _grid[firstPos];
+                    secondPos = Flip(firstPos);
+                    _grid[firstPos] = _grid[secondPos];
+                    _grid[secondPos] = tempColor; 
+                }
+            }
+        }
+
+        private Vector2Int Flip(Vector2Int pos)
+        {
+            pos.x = LevelSize - 1 - pos.x;
+            return pos;
+        }
+    }
 }

@@ -3,94 +3,97 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class RandomSpawning : MonoBehaviour, GenerateMethod
+namespace Connect.Generator.RandomSpawning
 {
-    private LevelGenerator Instance;
-
-    private Dictionary<Vector2Int, int> currentGrid;
-
-    private void Start()
+    public class RandomSpawning : MonoBehaviour, GenerateMethod
     {
-        Instance = GetComponent<LevelGenerator>();
-        currentGrid = new Dictionary<Vector2Int, int>();
-    }
+        private LevelGenerator Instance;
 
-    public void Generate()
-    {
-        StartCoroutine(SpawnRandom());
-    }
+        private Dictionary<Vector2Int, int> currentGrid;
 
-    private IEnumerator SpawnRandom()
-    {
-        bool isSpawning = true;
-
-        while (isSpawning)
+        private void Start()
         {
-            ResetGrid();
-            while(!SetStartNodes())
+            Instance = GetComponent<LevelGenerator>();
+            currentGrid = new Dictionary<Vector2Int, int>();
+        }
+
+        public void Generate()
+        {
+            StartCoroutine(SpawnRandom());
+        }
+
+        private IEnumerator SpawnRandom()
+        {
+            bool isSpawning = true;
+
+            while (isSpawning)
             {
                 ResetGrid();
-            }
-            Instance.RenderGrid(currentGrid);
-            yield return new WaitForSeconds(0.125f);
-        }
-    }
-
-    private void ResetGrid()
-    {
-        currentGrid.Clear();
-
-        for (int i = 0; i < Instance.levelSize; i++)
-        {
-            for (int j = 0; j < Instance.levelSize; j++)
-            {
-                currentGrid[new Vector2Int(i,j)] = -1;
-            }
-        }
-    }
-
-    private List<Vector2Int> directions = new List<Vector2Int>()
-    { Vector2Int.up,Vector2Int.down,Vector2Int.left,Vector2Int.right};
-
-    private bool SetStartNodes()
-    {
-        List<Vector2Int> spawnList = currentGrid.Keys.ToList();
-
-        int maxColors = Instance.levelSize;
-
-        int randomFirstId, randomSecondId;
-        Vector2Int firstSpawnPos, secondSpawnPos;
-
-        for (int i = 0; i < maxColors; i++)
-        {            
-            randomFirstId = Random.Range(0, spawnList.Count);
-            randomSecondId = Random.Range(0, spawnList.Count);
-
-            while (randomFirstId == randomSecondId)
-            {
-                randomFirstId = Random.Range(0, spawnList.Count);
-                randomSecondId = Random.Range(0, spawnList.Count);                
-            }
-
-            firstSpawnPos = spawnList[randomFirstId];
-            secondSpawnPos = spawnList[randomSecondId];
-
-            foreach (var direction in directions)
-            {
-                if (firstSpawnPos - secondSpawnPos == direction)
+                while (!SetStartNodes())
                 {
-                    randomFirstId = Random.Range(0, spawnList.Count);
-                    randomSecondId = Random.Range(0, spawnList.Count);                  
-                    return false;
+                    ResetGrid();
+                }
+                Instance.RenderGrid(currentGrid);
+                yield return new WaitForSeconds(0.125f);
+            }
+        }
+
+        private void ResetGrid()
+        {
+            currentGrid.Clear();
+
+            for (int i = 0; i < Instance.levelSize; i++)
+            {
+                for (int j = 0; j < Instance.levelSize; j++)
+                {
+                    currentGrid[new Vector2Int(i, j)] = -1;
                 }
             }
-
-            currentGrid[firstSpawnPos] = i;
-            currentGrid[secondSpawnPos] = i;
-            spawnList.Remove(firstSpawnPos);
-            spawnList.Remove(secondSpawnPos);
         }
 
-        return true;
-    }
+        private List<Vector2Int> directions = new List<Vector2Int>()
+    { Vector2Int.up,Vector2Int.down,Vector2Int.left,Vector2Int.right};
+
+        private bool SetStartNodes()
+        {
+            List<Vector2Int> spawnList = currentGrid.Keys.ToList();
+
+            int maxColors = Instance.levelSize;
+
+            int randomFirstId, randomSecondId;
+            Vector2Int firstSpawnPos, secondSpawnPos;
+
+            for (int i = 0; i < maxColors; i++)
+            {
+                randomFirstId = Random.Range(0, spawnList.Count);
+                randomSecondId = Random.Range(0, spawnList.Count);
+
+                while (randomFirstId == randomSecondId)
+                {
+                    randomFirstId = Random.Range(0, spawnList.Count);
+                    randomSecondId = Random.Range(0, spawnList.Count);
+                }
+
+                firstSpawnPos = spawnList[randomFirstId];
+                secondSpawnPos = spawnList[randomSecondId];
+
+                foreach (var direction in directions)
+                {
+                    if (firstSpawnPos - secondSpawnPos == direction)
+                    {
+                        randomFirstId = Random.Range(0, spawnList.Count);
+                        randomSecondId = Random.Range(0, spawnList.Count);
+                        return false;
+                    }
+                }
+
+                currentGrid[firstSpawnPos] = i;
+                currentGrid[secondSpawnPos] = i;
+                spawnList.Remove(firstSpawnPos);
+                spawnList.Remove(secondSpawnPos);
+            }
+
+            return true;
+        }
+    } 
 }
