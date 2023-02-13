@@ -1,5 +1,7 @@
+using Connect.Common;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 
@@ -23,7 +25,8 @@ namespace Connect.Generator.OptimisedNeighbours
         {
             Instance = GetComponent<LevelGenerator>();
             isCreating = true;
-            GridSet =  new HashSet<GridList>();
+            GridSetComparer setComparer = new GridSetComparer();
+            GridSet =  new HashSet<GridList>(setComparer);
             checkingGridCount = 0;
         }
 
@@ -56,9 +59,7 @@ namespace Connect.Generator.OptimisedNeighbours
                         AddToGridSet(tempList);
                     }
                 }
-            }
-            
-            yield return new WaitForSeconds(speed);
+            }            
 
             StartCoroutine(SolvePaths());
 
@@ -206,6 +207,100 @@ namespace Connect.Generator.OptimisedNeighbours
         {
             Next = null;
             Data = data;
+        }
+    }
+
+    public class GridSetComparer : IEqualityComparer<GridList>
+    {
+        private static List<Vector2Int> directionChecks = new List<Vector2Int>()
+        { Vector2Int.up,Vector2Int.left,Vector2Int.down,Vector2Int.right };
+
+        public bool Equals(GridList x, GridList y)
+        {
+            Dictionary<Vector2Int,int> firstGrid,secondGrid;
+            firstGrid = x.Data._grid;
+            secondGrid = y.Data._grid;
+
+            Dictionary<int,int> colorSwap = new Dictionary<int, int>();
+            Vector2Int[] posKeys = firstGrid.Keys.ToArray();
+            Vector2Int pos;
+            bool isEmpty = false;
+
+            for (int i = 0; i < posKeys.Length; i++)
+            {
+                pos = posKeys[i];
+
+                if (!isEmpty && firstGrid[pos] == -1 || secondGrid[pos] == -1)
+                {
+                    isEmpty = true;
+                }
+
+                if ((firstGrid[pos] == -1 && secondGrid[pos] != -1) ||
+                    (firstGrid[pos] != -1 && secondGrid[pos] == -1))
+                {
+                    return false;
+                }
+
+                if (!colorSwap.ContainsKey(firstGrid[pos]))
+                {
+                    colorSwap[firstGrid[pos]] = secondGrid[pos];  
+                }
+                else
+                {
+                    if (colorSwap[firstGrid[pos]] != secondGrid[pos])
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            if(isEmpty && x.Data.CurrentPos != y.Data.CurrentPos)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        public int GetHashCode(GridList obj)
+        {
+            string resultString = "";
+
+            Vector2Int startPos, checkPos;
+
+            startPos = Vector2Int.zero;
+
+            for (int i = 0; i < GridData.LevelSize; i++)
+            {
+                for (int j = 0; j < GridData.LevelSize; j++)
+                {
+                    startPos.x = i;
+                    startPos.y = j;
+
+                    if (obj.Data._grid[startPos] != -1)
+                    {
+                        foreach (var d in directionChecks)
+                        {
+                            checkPos = startPos + d;
+                            if(obj.Data.IsInsideGrid(checkPos) &&
+                                obj.Data._grid[checkPos] == obj.Data._grid[startPos])
+                            {
+                                resultString += "1";
+                            }
+                            else
+                            {
+                                resultString += "0";
+                            }
+                        }
+                    }
+                    else
+                    {
+                        resultString = "0000";
+                    }
+                }
+            }
+
+            return resultString.GetHashCode();
         }
     }
 
@@ -405,6 +500,8 @@ namespace Connect.Generator.OptimisedNeighbours
                     _grid[secondPos] = tempColor; 
                 }
             }
+
+            CurrentPos = Flip(CurrentPos);
         }
 
         private Vector2Int Flip(Vector2Int pos)

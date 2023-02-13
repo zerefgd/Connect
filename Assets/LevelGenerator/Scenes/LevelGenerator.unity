@@ -676,7 +676,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   canGeneratorOnce: 1
-  stage: -1
+  stage: 0
   _boardPrefab: {fileID: 2336236266812617353, guid: d041698b8801a2140850c713f53f4d7e, type: 3}
   _bgCellPrefab: {fileID: 4868279087156050791, guid: 32f4244f904678a4bbc7172fd6d65ace, type: 3}
   _nodePrefab: {fileID: 6012527295122756115, guid: fcd72154c34cc2848b962ca4b332baf5, type: 3}
@@ -697,7 +697,7 @@ MonoBehaviour:
   _timerText: {fileID: 1562565956}
   _gridCountText: {fileID: 454374650}
   _showOnlyResult: 0
-  speedMultipler: 10000
+  speedMultipler: 100
   speed: 0.1
 --- !u!1 &1487896737
 GameObject:
