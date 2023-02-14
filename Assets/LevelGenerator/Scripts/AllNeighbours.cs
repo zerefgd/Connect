@@ -72,8 +72,8 @@ namespace Connect.Generator.AllNeighbours
             }
         }
 
-        private List<Vector2Int> directionChecks = new List<Vector2Int>()
-        { Vector2Int.up,Vector2Int.down,Vector2Int.left,Vector2Int.right };
+        private List<Point> directionChecks = new List<Point>()
+        { Point.up,Point.down,Point.left,Point.right };
 
         private IEnumerator SolvePaths()
         {
@@ -106,7 +106,7 @@ namespace Connect.Generator.AllNeighbours
 
                     foreach (var direction in directionChecks)
                     {
-                        Vector2Int checkingDirection = item.CurrentPos + direction;
+                        Point checkingDirection = item.CurrentPos + direction;
 
                         if (item.IsInsideGrid(checkingDirection)
                             && item._grid[checkingDirection] == -1
@@ -149,47 +149,47 @@ namespace Connect.Generator.AllNeighbours
 
     public class GridData
     {
-        private static List<Vector2Int> directionChecks = new List<Vector2Int>()
-        { Vector2Int.up,Vector2Int.down,Vector2Int.left,Vector2Int.right };
+        private static List<Point> directionChecks = new List<Point>()
+        { Point.up,Point.down,Point.left,Point.right };
 
-        public Dictionary<Vector2Int, int> _grid;
+        public Dictionary<Point, int> _grid;
         public bool IsSolved;
-        public Vector2Int CurrentPos;
+        public Point CurrentPos;
         public int ColorId;
 
         public GridData(int i, int j, int levelSize)
         {
-            _grid = new Dictionary<Vector2Int, int>();
+            _grid = new Dictionary<Point, int>();
 
             for (int a = 0; a < levelSize; a++)
             {
                 for (int b = 0; b < levelSize; b++)
                 {
-                    _grid[new Vector2Int(a, b)] = -1;
+                    _grid[new Point(a, b)] = -1;
                 }
             }
             IsSolved = false;
-            CurrentPos = new Vector2Int(i, j);
+            CurrentPos = new Point(i, j);
             ColorId = 0;
             _grid[CurrentPos] = ColorId;
         }
 
         public GridData(int i, int j, int passedColor, GridData gridCopy)
         {
-            _grid = new Dictionary<Vector2Int, int>();
+            _grid = new Dictionary<Point, int>();
 
             foreach (var item in gridCopy._grid)
             {
                 _grid[item.Key] = item.Value;
             }
 
-            CurrentPos = new Vector2Int(i, j);
+            CurrentPos = new Point(i, j);
             ColorId = passedColor;
             _grid[CurrentPos] = ColorId;
             IsSolved = false;
         }
 
-        public bool IsInsideGrid(Vector2Int pos)
+        public bool IsInsideGrid(Point pos)
         {
             return _grid.ContainsKey(pos);
         }
@@ -219,7 +219,7 @@ namespace Connect.Generator.AllNeighbours
             return true;
         }
 
-        public bool IsNotNeighbour(Vector2Int pos)
+        public bool IsNotNeighbour(Point pos)
         {
             foreach (var item in _grid)
             {
@@ -238,9 +238,9 @@ namespace Connect.Generator.AllNeighbours
             return true;
         }
 
-        public List<Vector2Int> EmptyPosition()
+        public List<Point> EmptyPosition()
         {
-            List<Vector2Int> result = new List<Vector2Int>();
+            List<Point> result = new List<Point>();
 
             foreach (var item in _grid)
             {

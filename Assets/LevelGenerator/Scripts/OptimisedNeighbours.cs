@@ -98,8 +98,8 @@ namespace Connect.Generator.OptimisedNeighbours
             }
         }
 
-        private List<Vector2Int> directionChecks = new List<Vector2Int>()
-        { Vector2Int.up,Vector2Int.down,Vector2Int.left,Vector2Int.right };
+        private List<Point> directionChecks = new List<Point>()
+        { Point.up,Point.down,Point.left,Point.right };
 
         private IEnumerator SolvePaths()
         {
@@ -113,7 +113,7 @@ namespace Connect.Generator.OptimisedNeighbours
 
             GridData tempGrid;
             GridList tempList, connectList;
-            Vector2Int checkingDirection;
+            Point checkingDirection;
 
             while (canSolve)
             {
@@ -212,18 +212,18 @@ namespace Connect.Generator.OptimisedNeighbours
 
     public class GridSetComparer : IEqualityComparer<GridList>
     {
-        private static List<Vector2Int> directionChecks = new List<Vector2Int>()
-        { Vector2Int.up,Vector2Int.left,Vector2Int.down,Vector2Int.right };
+        private static List<Point> directionChecks = new List<Point>()
+        { Point.up,Point.left,Point.down,Point.right };
 
         public bool Equals(GridList x, GridList y)
         {
-            Dictionary<Vector2Int,int> firstGrid,secondGrid;
+            Dictionary<Point,int> firstGrid,secondGrid;
             firstGrid = x.Data._grid;
             secondGrid = y.Data._grid;
 
             Dictionary<int,int> colorSwap = new Dictionary<int, int>();
-            Vector2Int[] posKeys = firstGrid.Keys.ToArray();
-            Vector2Int pos;
+            Point[] posKeys = firstGrid.Keys.ToArray();
+            Point pos;
             bool isEmpty = false;
 
             for (int i = 0; i < posKeys.Length; i++)
@@ -266,9 +266,9 @@ namespace Connect.Generator.OptimisedNeighbours
         {
             string resultString = "";
 
-            Vector2Int startPos, checkPos;
+            Point startPos, checkPos;
 
-            startPos = Vector2Int.zero;
+            startPos = Point.zero;
 
             for (int i = 0; i < GridData.LevelSize; i++)
             {
@@ -306,28 +306,28 @@ namespace Connect.Generator.OptimisedNeighbours
 
     public class GridData
     {
-        private static List<Vector2Int> directionChecks = new List<Vector2Int>()
-        { Vector2Int.up,Vector2Int.down,Vector2Int.left,Vector2Int.right };
+        private static List<Point> directionChecks = new List<Point>()
+        { Point.up,Point.down,Point.left,Point.right };
 
-        public Dictionary<Vector2Int, int> _grid;
+        public Dictionary<Point, int> _grid;
         public bool IsSolved;
-        public Vector2Int CurrentPos;
+        public Point CurrentPos;
         public int ColorId;
         public static int LevelSize;
 
         public GridData(int i, int j, int levelSize)
         {
-            _grid = new Dictionary<Vector2Int, int>();
+            _grid = new Dictionary<Point, int>();
 
             for (int a = 0; a < levelSize; a++)
             {
                 for (int b = 0; b < levelSize; b++)
                 {
-                    _grid[new Vector2Int(a, b)] = -1;
+                    _grid[new Point(a, b)] = -1;
                 }
             }
             IsSolved = false;
-            CurrentPos = new Vector2Int(i, j);
+            CurrentPos = new Point(i, j);
             ColorId = 0;
             _grid[CurrentPos] = ColorId;
             LevelSize = levelSize;
@@ -335,20 +335,20 @@ namespace Connect.Generator.OptimisedNeighbours
 
         public GridData(int i, int j, int passedColor, GridData gridCopy)
         {
-            _grid = new Dictionary<Vector2Int, int>();
+            _grid = new Dictionary<Point, int>();
 
             foreach (var item in gridCopy._grid)
             {
                 _grid[item.Key] = item.Value;
             }
 
-            CurrentPos = new Vector2Int(i, j);
+            CurrentPos = new Point(i, j);
             ColorId = passedColor;
             _grid[CurrentPos] = ColorId;
             IsSolved = false;
         }
 
-        public bool IsInsideGrid(Vector2Int pos)
+        public bool IsInsideGrid(Point pos)
         {
             return _grid.ContainsKey(pos);
         }
@@ -378,7 +378,7 @@ namespace Connect.Generator.OptimisedNeighbours
             return true;
         }
 
-        public bool IsNotNeighbour(Vector2Int pos)
+        public bool IsNotNeighbour(Point pos)
         {
             foreach (var item in _grid)
             {
@@ -397,9 +397,9 @@ namespace Connect.Generator.OptimisedNeighbours
             return true;
         }
 
-        public List<Vector2Int> EmptyPosition()
+        public List<Point> EmptyPosition()
         {
-            List<Vector2Int> result = new List<Vector2Int>();
+            List<Point> result = new List<Point>();
 
             foreach (var item in _grid)
             {
@@ -451,13 +451,13 @@ namespace Connect.Generator.OptimisedNeighbours
 
         private void Rotate()
         {
-            Dictionary<Vector2Int,int> result = new Dictionary<Vector2Int,int>();
+            Dictionary<Point,int> result = new Dictionary<Point,int>();
 
             for (int i = 0; i < LevelSize; i++)
             {
                 for (int j = 0; j < LevelSize; j++)
                 {
-                    result[Rotate(new Vector2Int(i, j))] = _grid[new Vector2Int(i, j)];
+                    result[Rotate(new Point(i, j))] = _grid[new Point(i, j)];
                 }
             }
 
@@ -465,7 +465,7 @@ namespace Connect.Generator.OptimisedNeighbours
             {
                 for (int j = 0; j < LevelSize; j++)
                 {
-                    _grid[new Vector2Int(i, j)] = result[new Vector2Int(i, j)];
+                    _grid[new Point(i, j)] = result[new Point(i, j)];
                 }
             }
 
@@ -473,9 +473,9 @@ namespace Connect.Generator.OptimisedNeighbours
 
         }
 
-        private Vector2Int Rotate(Vector2Int pos)
+        private Point Rotate(Point pos)
         {
-            Vector2Int result = pos;
+            Point result = pos;
             result.x = LevelSize - 1 - pos.y;
             result.y = pos.x;
             return result;
@@ -487,13 +487,13 @@ namespace Connect.Generator.OptimisedNeighbours
             Rotate(flip);
 
             int tempColor;
-            Vector2Int firstPos, secondPos;
+            Point firstPos, secondPos;
 
             for (int i = 0; i < LevelSize/2; i++)
             {
                 for (int j = 0; j < LevelSize; j++)
                 {
-                    firstPos = new Vector2Int(i, j);
+                    firstPos = new Point(i, j);
                     tempColor = _grid[firstPos];
                     secondPos = Flip(firstPos);
                     _grid[firstPos] = _grid[secondPos];
@@ -504,7 +504,7 @@ namespace Connect.Generator.OptimisedNeighbours
             CurrentPos = Flip(CurrentPos);
         }
 
-        private Vector2Int Flip(Vector2Int pos)
+        private Point Flip(Point pos)
         {
             pos.x = LevelSize - 1 - pos.x;
             return pos;

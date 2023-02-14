@@ -45,11 +45,13 @@ namespace Connect.Generator
 
         [SerializeField] private NodeRenderer _nodePrefab;
 
-        public Dictionary<Vector2Int, NodeRenderer> nodeGrid;
+        public Dictionary<Point, NodeRenderer> nodeGrid;
+        private NodeRenderer[,] nodeArray;
 
         private void SpawnNodes()
         {
-            nodeGrid = new Dictionary<Vector2Int, NodeRenderer>();
+            nodeGrid = new Dictionary<Point, NodeRenderer>();
+            nodeArray = new NodeRenderer[levelSize,levelSize];
             Vector3 spawnPos;
             NodeRenderer spawnedNode;
 
@@ -60,7 +62,8 @@ namespace Connect.Generator
                     spawnPos = new Vector3(i + 0.5f, j + 0.5f, 0f);
                     spawnedNode = Instantiate(_nodePrefab, spawnPos, Quaternion.identity);
                     spawnedNode.Init();
-                    nodeGrid.Add(new Vector2Int(i, j), spawnedNode);
+                    nodeGrid.Add(new Point(i, j), spawnedNode);
+                    nodeArray[i,j] = spawnedNode;
                     spawnedNode.gameObject.name = i.ToString() + j.ToString();
                 }
             }
@@ -132,10 +135,10 @@ namespace Connect.Generator
 
         #region NODE_RENDERING
 
-        private List<Vector2Int> directions = new List<Vector2Int>()
-    { Vector2Int.up,Vector2Int.down,Vector2Int.left,Vector2Int.right};
+        private List<Point> directions = new List<Point>()
+        { Point.up,Point.down,Point.left,Point.right};
 
-        public void RenderGrid(Dictionary<Vector2Int, int> grid)
+        public void RenderGrid(Dictionary<Point, int> grid)
         {
             int currentColor;
             int numOfConnectedNodes;
@@ -160,7 +163,49 @@ namespace Connect.Generator
 
                     if (numOfConnectedNodes <= 1)
                     {
-                        item.Value.SetEdge(currentColor, Vector2Int.zero);
+                        item.Value.SetEdge(currentColor, Point.zero);
+                    }
+                }
+            }
+        }
+
+        private Point[] neighbourPoints = new Point[]
+        {
+            Point.up,Point.left,Point.down, Point.right
+        };
+
+        public void RenderGrid(int[,] grid)
+        {
+            int currentColor;
+            int numOfConnectedNodes;
+
+            for (int i = 0; i < levelSize; i++)
+            {
+                for (int j = 0; j < levelSize; j++)
+                {
+                    nodeArray[i,j].Init();
+                    currentColor = grid[i, j];
+                    numOfConnectedNodes = 0;
+
+                    if(currentColor != -1)
+                    {
+                        for (int p = 0; p < neighbourPoints.Length; p++)
+                        {
+                            Point tempPoint = new Point(i,j) + neighbourPoints[p];
+
+                            if(tempPoint.IsPointValid(levelSize) &&
+                                grid[tempPoint.x,tempPoint.y] == currentColor                                
+                                )
+                            {
+                                nodeArray[i,j].SetEdge(currentColor, neighbourPoints[p]);
+                                numOfConnectedNodes++;
+                            }
+                        }
+
+                        if(numOfConnectedNodes <= 1)
+                        {
+                            nodeArray[i, j].SetEdge(currentColor, Point.zero);
+                        }
                     }
                 }
             }
@@ -173,5 +218,50 @@ namespace Connect.Generator
     public interface GenerateMethod
     {
         public void Generate();
-    } 
+    }
+
+    public struct Point
+    {
+        public int x;
+        public int y;
+
+        public Point(int x,int y)
+        {
+            this.x = x;
+            this.y = y;
+        }
+
+        public bool IsPointValid(int maxCount)
+        {
+            return x < maxCount && y < maxCount && x > -1 && y > -1;    
+        }
+
+        public static Point operator +(Point p1, Point p2)
+        {
+            return new Point(p1.x + p2.x, p1.y + p2.y);
+        }
+
+        public static Point operator -(Point p1, Point p2)
+        {
+            return new Point(p1.x - p2.x, p1.y - p2.y);
+        }
+
+        public static Point up => new Point(0,1);
+        public static Point left => new Point(-1,0);
+        public static Point down => new Point(0,-1);
+        public static Point right => new Point(1, 0);
+        public static Point zero => new Point(0, 0);
+        public static bool operator ==(Point p1, Point p2) => p1.x == p2.x && p1.y == p2.y;
+        public static bool operator !=(Point p1, Point p2) => p1.x != p2.x || p1.y != p2.y;
+        public override bool Equals(object obj)
+        {
+            Point a = (Point)obj;
+            return x == a.x && y == a.y;
+        }
+        public override int GetHashCode()
+        {
+            return (100*x + y).GetHashCode();
+        }
+
+    }
 }

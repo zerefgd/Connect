@@ -9,12 +9,12 @@ namespace Connect.Generator.RandomSpawning
     {
         private LevelGenerator Instance;
 
-        private Dictionary<Vector2Int, int> currentGrid;
+        private Dictionary<Point, int> currentGrid;
 
         private void Start()
         {
             Instance = GetComponent<LevelGenerator>();
-            currentGrid = new Dictionary<Vector2Int, int>();
+            currentGrid = new Dictionary<Point, int>();
         }
 
         public void Generate()
@@ -46,22 +46,22 @@ namespace Connect.Generator.RandomSpawning
             {
                 for (int j = 0; j < Instance.levelSize; j++)
                 {
-                    currentGrid[new Vector2Int(i, j)] = -1;
+                    currentGrid[new Point(i, j)] = -1;
                 }
             }
         }
 
-        private List<Vector2Int> directions = new List<Vector2Int>()
-    { Vector2Int.up,Vector2Int.down,Vector2Int.left,Vector2Int.right};
+        private List<Point> directions = new List<Point>()
+    { Point.up,Point.down,Point.left,Point.right};
 
         private bool SetStartNodes()
         {
-            List<Vector2Int> spawnList = currentGrid.Keys.ToList();
+            List<Point> spawnList = currentGrid.Keys.ToList();
 
             int maxColors = Instance.levelSize;
 
             int randomFirstId, randomSecondId;
-            Vector2Int firstSpawnPos, secondSpawnPos;
+            Point firstSpawnPos, secondSpawnPos;
 
             for (int i = 0; i < maxColors; i++)
             {
