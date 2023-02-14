@@ -221,12 +221,7 @@ namespace Connect.Generator.VectorToPoint
             firstGrid = x.Data._grid;
             secondGrid = y.Data._grid;
 
-            int[] colorSwap = new int[GridData.LevelSize];
-
-            for (int i = 0; i < colorSwap.Length; i++)
-            {
-                colorSwap[i] = -1;
-            }
+            Dictionary<int,int> colorSwap = new Dictionary<int, int>();
 
             Point pos;
             bool isEmpty = false;
@@ -249,11 +244,11 @@ namespace Connect.Generator.VectorToPoint
                         return false;
                     }
 
-                    if (firstGrid[pos.x,pos.y] != -1 && colorSwap[firstGrid[pos.x,pos.y]] != -1)
+                    if (!colorSwap.ContainsKey(firstGrid[pos.x,pos.y]))
                     {
                         colorSwap[firstGrid[pos.x, pos.y]] = secondGrid[pos.x, pos.y];
                     }
-                    else if (firstGrid[pos.x,pos.y] != -1)
+                    else
                     {
                         if (colorSwap[firstGrid[pos.x, pos.y]] != secondGrid[pos.x, pos.y])
                         {
