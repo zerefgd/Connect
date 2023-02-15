@@ -221,7 +221,12 @@ namespace Connect.Generator.VectorToPoint
             firstGrid = x.Data._grid;
             secondGrid = y.Data._grid;
 
-            Dictionary<int,int> colorSwap = new Dictionary<int, int>();
+            int[] colorSwap = new int[x.Data.ColorId + 1];
+
+            for (int i = 0; i < colorSwap.Length; i++)
+            {
+                colorSwap[i] = -1;
+            }
 
             Point pos;
             bool isEmpty = false;
@@ -244,11 +249,13 @@ namespace Connect.Generator.VectorToPoint
                         return false;
                     }
 
-                    if (!colorSwap.ContainsKey(firstGrid[pos.x,pos.y]))
+                    bool canCheck = firstGrid[pos.x, pos.y] != -1;
+
+                    if (canCheck && colorSwap[firstGrid[pos.x,pos.y]] == -1)
                     {
                         colorSwap[firstGrid[pos.x, pos.y]] = secondGrid[pos.x, pos.y];
                     }
-                    else
+                    else if(canCheck)
                     {
                         if (colorSwap[firstGrid[pos.x, pos.y]] != secondGrid[pos.x, pos.y])
                         {
@@ -300,92 +307,50 @@ namespace Connect.Generator.VectorToPoint
                     }
                 }
             }
-
-            bool[] resultBinary = Convert3DTo1D(graph);
-            long[] resultLong = Convert1DToLong(resultBinary);
-            return ConvertLongArrayToString(resultLong).GetHashCode();
+            return GetHashCodeBool3D(graph);            
         }
 
-        public static bool[] Convert3DTo1D(bool[,,] array)
+        public int GetHashCodeBool3D(bool[,,] arr)
         {
-            int l1 = array.GetLength(0);
-            int l2 = array.GetLength(1);
-            int l3 = array.GetLength(2);
-            int l = l1 * l2 *l3;
-            bool[] result = new bool[l];
+            int length = arr.GetLength(0) * arr.GetLength(1) * arr.GetLength(2);
+            byte[] byteArray = new byte[(length + 7) / 8];
 
             int index = 0;
-            for (int i = 0; i < l1; i++)
+            int bitIndex = 0;
+            byte currentByte = 0;
+
+            for (int i = 0; i < arr.GetLength(0); i++)
             {
-                for (int j = 0; j < l2; j++)
+                for (int j = 0; j < arr.GetLength(1); j++)
                 {
-                    for (int k = 0; k < l3; k++)
+                    for (int k = 0; k < arr.GetLength(2); k++)
                     {
-                        result[index++] = array[i,j,k];
+                        if (arr[i, j, k])
+                        {
+                            currentByte |= (byte)(1 << bitIndex);
+                        }
+
+                        bitIndex++;
+
+                        if (bitIndex == 8)
+                        {
+                            byteArray[index] = currentByte;
+                            currentByte = 0;
+                            bitIndex = 0;
+                            index++;
+                        }
                     }
                 }
             }
-            return result;
-        }
 
-        public static long[] Convert1DToLong(bool[] array)
-        {
-            int length = array.Length;
-            int longCount = (length + 63)/ 64;
-            long[] result = new long[longCount];
-            for (int i = 0; i < length; i++)
+            if (bitIndex > 0)
             {
-                if (array[i])
-                {
-                    result[i/64] |=  1L << (i % 64);
-                }
-            }
-            return result;
-        }
-
-        public static string ConvertLongArrayToString(long[] array)
-        {
-            StringBuilder sb= new StringBuilder();
-            for (int i = 0; i < array.Length; i++)
-            {
-                sb.Append(
-                    string.Format(new FixedLengthFormatProvider(20),"{0:D}",
-                    array[i].ToString())
-                    );
-            }
-            return sb.ToString();
-        }
-
-    }
-
-    public class FixedLengthFormatProvider : IFormatProvider, ICustomFormatter
-    {
-        private readonly int _length;
-
-        public FixedLengthFormatProvider(int length)
-        {
-            _length = length;
-        }
-
-        public object GetFormat(Type formatType)
-        {
-            if (formatType == typeof(ICustomFormatter))
-            {
-                return this;
+                byteArray[index] = currentByte;
             }
 
-            return null;
+            return BitConverter.ToString(byteArray).GetHashCode();
         }
 
-        public string Format(string format, object arg, IFormatProvider formatProvider)
-        {
-            if (arg is long && format == "D")
-            {
-                return ((long)arg).ToString().PadLeft(_length, '0');
-            }
-
-            return arg.ToString();
-        }
     }
 
 
