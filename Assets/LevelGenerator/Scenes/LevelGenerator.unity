@@ -640,7 +640,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1131468761}
   - component: {fileID: 1131468762}
-  - component: {fileID: 1131468764}
   - component: {fileID: 1131468765}
   m_Layer: 0
   m_Name: LevelGenerator
@@ -677,29 +676,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   canGeneratorOnce: 1
-  stage: 0
+  stage: -1
   _boardPrefab: {fileID: 2336236266812617353, guid: d041698b8801a2140850c713f53f4d7e, type: 3}
   _bgCellPrefab: {fileID: 4868279087156050791, guid: 32f4244f904678a4bbc7172fd6d65ace, type: 3}
   _nodePrefab: {fileID: 6012527295122756115, guid: fcd72154c34cc2848b962ca4b332baf5, type: 3}
   _simulateButton: {fileID: 554386616}
   _allLevelList: {fileID: 11400000, guid: 0c42c6ab4e819f74a8685ba2109401ed, type: 2}
---- !u!114 &1131468764
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1131468760}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 94718ecc824c58345afa41d0804813aa, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _timerText: {fileID: 1562565956}
-  _gridCountText: {fileID: 454374650}
-  _showOnlyResult: 0
-  speedMultipler: 32000
-  speed: 0.005
 --- !u!114 &1131468765
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -712,11 +694,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 00d33c3024b1a584e825038f3097790a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _timerText: {fileID: 0}
-  _gridCountText: {fileID: 0}
+  _timerText: {fileID: 1562565956}
+  _gridCountText: {fileID: 454374650}
   _showOnlyResult: 0
-  speedMultipler: 0
-  speed: 0
+  speedMultipler: 400
+  speed: 0.005
 --- !u!1 &1487896737
 GameObject:
   m_ObjectHideFlags: 0
