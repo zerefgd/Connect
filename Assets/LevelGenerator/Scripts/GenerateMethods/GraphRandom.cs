@@ -627,13 +627,14 @@ namespace Connect.Generator.GraphRandom
 
             if (FlowLength() < 3) return;
 
-            //HashSet<Point> minSet = FindMinConnectedSet(new List<Point>(allEmpty));
+            HashSet<Point> minSet = FindMinConnectedSet(new List<Point>(allEmpty));
 
             if (oneEmpty.Count > 0)
             {
                 foreach (var item in oneEmpty)
                 {
-                    emptyPositions.Add(item);
+                    if (minSet.Contains(item))
+                        emptyPositions.Add(item);
                 }
 
                 return;
@@ -641,7 +642,8 @@ namespace Connect.Generator.GraphRandom
 
             foreach (var item in allEmpty)
             {
-                emptyPositions.Add(item);
+                if (minSet.Contains(item))
+                    emptyPositions.Add(item);
             }
 
         }
