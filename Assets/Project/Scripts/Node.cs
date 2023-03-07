@@ -65,7 +65,7 @@ namespace Connect.Core
             colorId = colorIdForSpawnedNode;
             _point.SetActive(true);
             _point.GetComponent<SpriteRenderer>().color =
-                GameplayManager.Instance.NodeColors[colorId];
+                GameplayManager.Instance.NodeColors[colorId % GameplayManager.Instance.NodeColors.Count];
         }
 
         public void SetEdge(Vector2Int offset, Node node)
@@ -242,7 +242,7 @@ namespace Connect.Core
             GameObject connectedEdge = ConnectedEdges[connectedNode];
             connectedEdge.SetActive(true);
             connectedEdge.GetComponent<SpriteRenderer>().color =
-                GameplayManager.Instance.NodeColors[colorId];
+                GameplayManager.Instance.NodeColors[colorId % GameplayManager.Instance.NodeColors.Count];
         }
 
         private void RemoveEdge(Node node)

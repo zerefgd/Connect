@@ -777,10 +777,10 @@ namespace Connect.Generator.GraphRandom
         {
             List<Point> result = new List<Point>
             {
-                new Point(point.x + 1, point.y + 1),
-                new Point(point.x + 1, point.y - 1),
-                new Point(point.x - 1, point.y + 1),
-                new Point(point.x - 1, point.y - 1)
+                new Point(point.x, point.y + 1),
+                new Point(point.x, point.y - 1),
+                new Point(point.x + 1, point.y),
+                new Point(point.x - 1, point.y)
             };
 
             return result;

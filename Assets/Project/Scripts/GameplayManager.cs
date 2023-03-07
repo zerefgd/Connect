@@ -149,7 +149,7 @@ namespace Connect.Core
 
         public Color GetHighLightColor(int colorID)
         {
-            Color result = NodeColors[colorID];
+            Color result = NodeColors[colorID % NodeColors.Count];
             result.a = 0.4f;
             return result;
         }
